@@ -1,0 +1,38 @@
+---
+title: "Tidy Tuesday - 04-07-2020"
+author: "Microscone"
+date: "4/15/2020"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(lubridate)
+# Get the Data
+
+tdf_winners <- read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-04-07/tdf_winners.csv')
+
+tdf_stages <- read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-04-07/tdf_stages.csv')
+
+stages_data <- read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-04-07/stage_data.csv', guess_max = 100000)
+
+
+str(tdf_winners)
+str(tdf_stages)
+str(stages_data)
+```
+
+
+```{r}
+str(tdf_winners)
+
+tdf_winners <- tdf_winners %>% 
+  mutate("Avg_speed_km/hr" = distance/time_overall,
+         year = year(start_date))
+
+ggplot(tdf_winners)+
+  geom_col(aes(x = year, y = `Avg_speed_km/hr`)) +
+  theme_bw() +
+  scale_y_continuous(expand = c(0,0))
+```
+
