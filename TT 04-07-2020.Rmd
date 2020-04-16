@@ -8,6 +8,7 @@ output: html_document
 ```{r}
 library(tidyverse)
 library(lubridate)
+library(hrbrthemes)
 # Get the Data
 
 tdf_winners <- read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-04-07/tdf_winners.csv')
@@ -31,8 +32,60 @@ tdf_winners <- tdf_winners %>%
          year = year(start_date))
 
 ggplot(tdf_winners)+
-  geom_col(aes(x = year, y = `Avg_speed_km/hr`)) +
+  geom_col(aes(x = year, y = `Avg_speed_km/hr`), fill = "steelblue", width = 1.1) +
   theme_bw() +
   scale_y_continuous(expand = c(0,0))
+  
+ggplot(tdf_winners, aes(x = year, y = `Avg_speed_km/hr`))+
+  geom_point(color = "blue") +
+  geom_segment(aes(x=year, xend=year, y=0, yend=`Avg_speed_km/hr`)) +
+  theme_bw() +
+  scale_y_continuous(expand = c(0,1))
+```
+
+
+I wanted to know how important it is to be a stage winner to be the overall winner.
+This analysis ties the data together, and examines the correlation between number of stage wins and the overall winner
+```{r}
+analysis <- tdf_stages %>% 
+  mutate(year = year(Date)) %>% 
+  left_join(tdf_winners, by = "year")
+  
+wins_per_year <- analysis %>% 
+  group_by(year) %>% 
+  mutate(samewinner = (Winner == winner_name)) %>%
+  tally(samewinner == T)
+
+wins_per_year %>% 
+  ggplot(aes(x = year, y = n)) +
+  geom_point(color = "blue") +
+  geom_segment(aes(x=year, xend=year, y=0, yend=n)) +
+  theme_bw() +
+  scale_y_continuous(expand = c(0, 0.1))
+
+#how many stages are there in a year?
+stages_per_year <- analysis %>% 
+  group_by(year) %>% 
+  tally()
+  count(Stage)
+  
+wins_per_year <- wins_per_year %>% 
+  rename(wins_per_year = n) %>% 
+  left_join(stages_per_year, by = "year") %>% 
+  rename(stages_per_year = n) %>% 
+  mutate(Percent_stage_wins = round(wins_per_year/stages_per_year, 2))
+
+wins_per_year %>% 
+  ggplot(aes(x = year, y = Percent_stage_wins))+
+  geom_point(color = "blue") +
+  geom_segment(aes(x=year, xend=year, y=0, yend=Percent_stage_wins)) +
+  theme_ipsum() +
+  scale_y_continuous(expand = c(0, .01))
+  
+# correlation <- analysis %>% 
+#   select()
+# cor()
+# corrplot
+
 ```
 
